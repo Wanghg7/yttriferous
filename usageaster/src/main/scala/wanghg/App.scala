@@ -13,27 +13,7 @@ import scala.collection.mutable.ListBuffer
 object App {
 
   def main(args: Array[String]): Unit = {
-    networkWordCount()
-  }
-
-  def networkWordCount(): Unit = {
-    // $ nc -lk 9999
-    val conf = new SparkConf().setMaster("local[2]") setAppName ("NetworkWordCount")
-    val ssc = new StreamingContext(conf, Seconds(5))
-    val acc = new Top3(List.empty[(String, Int)])
-    ssc.sparkContext.register(acc)
-    val lines = ssc.socketTextStream("localhost", 9999)
-    val words = lines.flatMap(_.split(" "))
-    val pairs = words.map(word => (word, 1))
-    val wordCounts = pairs.reduceByKey(_ + _)
-    wordCounts.foreachRDD(rdd => {
-      rdd.foreach(acc.add)
-      println("--------------------------------------------------")
-      accToView(conf, acc, "words", "word", "cnt")
-      printView(conf, "words", "word", "cnt")
-    })
-    ssc.start()
-    ssc.awaitTermination()
+    NetworkWordCount.run()
   }
 
   def kafkaWordCount(): Unit = {
