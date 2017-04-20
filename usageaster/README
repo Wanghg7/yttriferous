@@ -1,0 +1,21 @@
+Spark Standalone Mode
+
+spark-2.1.0-bin-hadoop2.7
+
+sbin/start-master.sh
+
+http://localhost:8080/
+
+SPARK_WORKER_INSTANCES=3 SPARK_WORKER_CORES=1 sbin/start-slave.sh spark://Wangs-MacBook-Pro.local:7077
+
+bin/spark-shell spark://Wangs-MacBook-Pro.local:7077
+
+bin/spark-submit --master spark://Wangs-MacBook-Pro.local:7077 /Users/wanghg/IdeaProjects/sparktest/target/sparktest-1.0-SNAPSHOT.jar
+
+bin/spark-submit --master spark://Wangs-MacBook-Pro.local:7077 --deploy-mode cluster /Users/wanghg/IdeaProjects/sparktest/target/sparktest-1.0-SNAPSHOT.jar
+
+https://redis.io/
+
+redis-3.2.8.tar.gz
+
+
