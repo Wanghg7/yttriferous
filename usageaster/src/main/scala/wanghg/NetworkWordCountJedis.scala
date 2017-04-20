@@ -23,8 +23,14 @@ object NetworkWordCountJedis {
       val jedis = new Jedis("localhost")
       rdd.foreach(acc.add)
       println("--------------------------------------------------" + this.getClass.getName)
-      acc.value.foreach(println)
-      jedis.set("wanghg", "fuck")
+      acc.value.foreach(_ match {
+        case (word, count) =>
+          val h = "words:count"
+          val k = String.format("%s", word)
+          val v = String.format("%d", count.asInstanceOf[Integer])
+          jedis.hset(h, k, v)
+          printf("jedis: (%s, %s) -> %s\n", k, v, h)
+      })
     })
     ssc.start()
     ssc.awaitTermination()
