@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
 object App {
 
   def main(args: Array[String]): Unit = {
-    NetworkWordCount.run()
+    NetworkWordCountJedis.run()
   }
 
   def kafkaWordCount(): Unit = {
