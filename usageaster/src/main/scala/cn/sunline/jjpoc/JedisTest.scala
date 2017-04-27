@@ -1,4 +1,4 @@
-package wanghg
+package cn.sunline.jjpoc
 
 import redis.clients.jedis.Jedis
 
@@ -9,7 +9,7 @@ object JedisTest {
 
   def main(args: Array[String]): Unit = {
     val jedis = new Jedis("localhost")
-    val value = jedis.get("wanghg")
+    val value = jedis.get("cn/sunline/jjpoc")
     println(value)
   }
 
