@@ -30,7 +30,7 @@ object KafkaStreamingJedisPoc {
       rdd.foreach(acc.add)
       println("--------------------------------------------------" + this.getClass.getName)
       print(acc)
-      val (max, min, sum, cnt, top5) = acc.value
+      val (max, min, sum, cnt, avg, top5) = acc.value
       // --------------------------------------------------
       // clear agg
       jedis.del("poc:agg:name")
@@ -47,6 +47,9 @@ object KafkaStreamingJedisPoc {
       // set cnt
       jedis.rpush("poc:agg:name", "cnt")
       jedis.rpush("poc:agg:value", String.format("%d", cnt.asInstanceOf[java.lang.Integer]))
+      // set sum
+      jedis.rpush("poc:agg:name", "avg")
+      jedis.rpush("poc:agg:value", String.format("%.2f", (sum/cnt).asInstanceOf[java.lang.Double]))
       // --------------------------------------------------
       // clear top5
       jedis.del("poc:top5:name")

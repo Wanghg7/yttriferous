@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by wanghg on 27/4/2017.
   */
-class TopM(mx: Double, mi: Double, sm: Double, n: Integer, l: List[(String, Double)]) extends AccumulatorV2[String, (Double, Double, Double, Integer, List[(String, Double)])] {
+class TopM(mx: Double, mi: Double, sm: Double, n: Integer, l: List[(String, Double)]) extends AccumulatorV2[String, (Double, Double, Double, Integer, Double, List[(String, Double)])] {
 
   private[this] var max = mx
   private[this] var min = mi
@@ -17,7 +17,7 @@ class TopM(mx: Double, mi: Double, sm: Double, n: Integer, l: List[(String, Doub
 
   override def isZero: Boolean = list.isEmpty
 
-  override def copy(): AccumulatorV2[String, (Double, Double, Double, Integer, List[(String, Double)])] = new TopM(max, min, sum, cnt, list)
+  override def copy(): AccumulatorV2[String, (Double, Double, Double, Integer, Double, List[(String, Double)])] = new TopM(max, min, sum, cnt, list)
 
   override def reset(): Unit = {
     max = Double.MinValue
@@ -25,8 +25,8 @@ class TopM(mx: Double, mi: Double, sm: Double, n: Integer, l: List[(String, Doub
     list = List.empty[(String, Double)]
   }
 
-  override def merge(other: AccumulatorV2[String, (Double, Double, Double, Integer, List[(String, Double)])]): Unit = {
-    val (mx, mi, sm, n, l) = other.value
+  override def merge(other: AccumulatorV2[String, (Double, Double, Double, Integer, Double, List[(String, Double)])]): Unit = {
+    val (mx, mi, sm, n, _, l) = other.value
     max = if (max > mx) max else mx
     min = if (min < mi) min else mi
     for (v <- l) add(v._1 + "," + v._2)
@@ -44,7 +44,7 @@ class TopM(mx: Double, mi: Double, sm: Double, n: Integer, l: List[(String, Doub
     list = add(list, v1, dbl, ListBuffer.empty[(String, Double)])
   }
 
-  override def value: (Double, Double, Double, Integer, List[(String, Double)]) = (max, min, sum, cnt, list)
+  override def value: (Double, Double, Double, Integer, Double, List[(String, Double)]) = (max, min, sum, cnt, sum/cnt, list)
 
   private def add(list: List[(String, Double)], key: String, value: Double, acc: ListBuffer[(String, Double)]): List[(String, Double)] = {
     list match {
@@ -67,6 +67,7 @@ class TopM(mx: Double, mi: Double, sm: Double, n: Integer, l: List[(String, Doub
     sb.append(String.format("min: %.2f\n", min.asInstanceOf[java.lang.Double]))
     sb.append(String.format("sum: %.2f\n", sum.asInstanceOf[java.lang.Double]))
     sb.append(String.format("cnt: %d\n", cnt.asInstanceOf[java.lang.Integer]))
+    sb.append(String.format("avg: %.2f\n", (sum/cnt).asInstanceOf[java.lang.Double]))
     sb.append(String.format("top5:\n"))
     list.foreach(pair => {
       val (k, v) = pair
