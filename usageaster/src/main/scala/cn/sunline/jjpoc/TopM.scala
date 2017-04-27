@@ -7,15 +7,17 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by wanghg on 27/4/2017.
   */
-class TopM(mx: Double, mi: Double, l: List[(String, Double)]) extends AccumulatorV2[String, (Double, Double, List[(String, Double)])] {
+class TopM(mx: Double, mi: Double, sm: Double, n: Integer, l: List[(String, Double)]) extends AccumulatorV2[String, (Double, Double, Double, Integer, List[(String, Double)])] {
 
   private[this] var max = mx
   private[this] var min = mi
+  private[this] var sum = sm
+  private[this] var cnt = n
   private[this] var list = l
 
   override def isZero: Boolean = list.isEmpty
 
-  override def copy(): AccumulatorV2[String, (Double, Double, List[(String, Double)])] = new TopM(max, min, list)
+  override def copy(): AccumulatorV2[String, (Double, Double, Double, Integer, List[(String, Double)])] = new TopM(max, min, sum, cnt, list)
 
   override def reset(): Unit = {
     max = Double.MinValue
@@ -23,8 +25,8 @@ class TopM(mx: Double, mi: Double, l: List[(String, Double)]) extends Accumulato
     list = List.empty[(String, Double)]
   }
 
-  override def merge(other: AccumulatorV2[String, (Double, Double, List[(String, Double)])]): Unit = {
-    val (mx, mi, l) = other.value
+  override def merge(other: AccumulatorV2[String, (Double, Double, Double, Integer, List[(String, Double)])]): Unit = {
+    val (mx, mi, sm, n, l) = other.value
     max = if (max > mx) max else mx
     min = if (min < mi) min else mi
     for (v <- l) add(v._1 + "," + v._2)
@@ -37,10 +39,12 @@ class TopM(mx: Double, mi: Double, l: List[(String, Double)]) extends Accumulato
     val dbl = v2.toDouble
     max = if (dbl > max) dbl else max
     min = if (dbl < min) dbl else min
+    sum = sum + dbl
+    cnt = cnt + 1
     list = add(list, v1, dbl, ListBuffer.empty[(String, Double)])
   }
 
-  override def value: (Double, Double, List[(String, Double)]) = (max, min, list)
+  override def value: (Double, Double, Double, Integer, List[(String, Double)]) = (max, min, sum, cnt, list)
 
   private def add(list: List[(String, Double)], key: String, value: Double, acc: ListBuffer[(String, Double)]): List[(String, Double)] = {
     list match {
@@ -61,6 +65,8 @@ class TopM(mx: Double, mi: Double, l: List[(String, Double)]) extends Accumulato
     val sb = new StringBuilder
     sb.append(String.format("max: %.2f\n", max.asInstanceOf[java.lang.Double]))
     sb.append(String.format("min: %.2f\n", min.asInstanceOf[java.lang.Double]))
+    sb.append(String.format("sum: %.2f\n", sum.asInstanceOf[java.lang.Double]))
+    sb.append(String.format("cnt: %d\n", cnt.asInstanceOf[java.lang.Integer]))
     sb.append(String.format("top5:\n"))
     list.foreach(pair => {
       val (k, v) = pair

@@ -16,7 +16,7 @@ object KafkaStreamingJedisPoc {
     // spark context settings
     val conf = new SparkConf().setMaster("local[2]") setAppName ("NetworkWordCount")
     val ssc = new StreamingContext(conf, Seconds(5))
-    val acc = new TopM(Double.MinValue, Double.MaxValue, List.empty[(String, Double)])
+    val acc = new TopM(Double.MinValue, Double.MaxValue, 0.0, 0, List.empty[(String, Double)])
     ssc.sparkContext.register(acc)
     //
     val topicsSet = Set("test")
@@ -30,7 +30,7 @@ object KafkaStreamingJedisPoc {
       rdd.foreach(acc.add)
       println("--------------------------------------------------" + this.getClass.getName)
       print(acc)
-      val (max, min, top5) = acc.value
+      val (max, min, sum, cnt, top5) = acc.value
       // --------------------------------------------------
       // clear agg
       jedis.del("poc:agg:name")
@@ -41,6 +41,12 @@ object KafkaStreamingJedisPoc {
       // set min
       jedis.rpush("poc:agg:name", "min")
       jedis.rpush("poc:agg:value", String.format("%.2f", min.asInstanceOf[java.lang.Double]))
+      // set sum
+      jedis.rpush("poc:agg:name", "sum")
+      jedis.rpush("poc:agg:value", String.format("%.2f", sum.asInstanceOf[java.lang.Double]))
+      // set cnt
+      jedis.rpush("poc:agg:name", "cnt")
+      jedis.rpush("poc:agg:value", String.format("%d", cnt.asInstanceOf[java.lang.Integer]))
       // --------------------------------------------------
       // clear top5
       jedis.del("poc:top5:name")

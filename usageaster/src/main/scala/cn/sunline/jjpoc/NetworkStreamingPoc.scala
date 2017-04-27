@@ -12,7 +12,7 @@ object NetworkStreamingPoc {
     // $ nc -lk 9999
     val conf = new SparkConf().setMaster("local[2]") setAppName ("NetworkDemo")
     val ssc = new StreamingContext(conf, Seconds(5))
-    val acc = new TopM(Double.MinValue, Double.MaxValue, List.empty[(String, Double)])
+    val acc = new TopM(Double.MinValue, Double.MaxValue, 0.0, 0, List.empty[(String, Double)])
     ssc.sparkContext.register(acc)
     val lines = ssc.socketTextStream("localhost", 9999)
     lines.foreachRDD(rdd => {
