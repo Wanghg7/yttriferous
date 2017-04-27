@@ -16,7 +16,7 @@ object KafkaStreamingJedisPoc {
     // spark context settings
     val conf = new SparkConf().setMaster("local[2]") setAppName ("NetworkWordCount")
     val ssc = new StreamingContext(conf, Seconds(5))
-    val acc = new TopN(List.empty[(String, Int)])
+    val acc = new TopM(Double.MinValue, Double.MaxValue, List.empty[(String, Double)])
     ssc.sparkContext.register(acc)
     //
     val topicsSet = Set("test")
@@ -25,20 +25,31 @@ object KafkaStreamingJedisPoc {
       ssc, kafkaParams, topicsSet)
     val lines: DStream[String] = messages.map(pair => pair._2)
     //
-    val words = lines.flatMap(_.split(" "))
-    val pairs = words.map(word => (word, 1))
-    val wordCounts = pairs.reduceByKey(_ + _)
-    wordCounts.foreachRDD(rdd => {
+    lines.foreachRDD(rdd => {
       val jedis = new Jedis("localhost")
       rdd.foreach(acc.add)
       println("--------------------------------------------------" + this.getClass.getName)
-      acc.value.foreach(_ match {
-        case (word, count) =>
-          val h = "words:count"
-          val k = String.format("%s", word)
-          val v = String.format("%d", count.asInstanceOf[Integer])
-          jedis.hset(h, k, v)
-          printf("jedis: (%s, %s) -> %s\n", k, v, h)
+      print(acc)
+      val (max, min, top5) = acc.value
+      // --------------------------------------------------
+      // clear agg
+      jedis.del("poc:agg:name")
+      jedis.del("poc:agg:value")
+      // set max
+      jedis.rpush("poc:agg:name", "max")
+      jedis.rpush("poc:agg:value", String.format("%.2f", max.asInstanceOf[java.lang.Double]))
+      // set min
+      jedis.rpush("poc:agg:name", "min")
+      jedis.rpush("poc:agg:value", String.format("%.2f", min.asInstanceOf[java.lang.Double]))
+      // --------------------------------------------------
+      // clear top5
+      jedis.del("poc:top5:name")
+      jedis.del("poc:top5:value")
+      // set top5
+      top5.foreach(pair => {
+        val (k, v) = pair
+        jedis.rpush("poc:top5:name", k)
+        jedis.rpush("poc:top5:value", String.format("%.2f", v.asInstanceOf[java.lang.Double]))
       })
     })
     ssc.start()
