@@ -1,0 +1,21 @@
+设计
+
+1. 生成测试数据，并逐条发送到Kafka
+2. 用SparkStreaming读取Kafka，进行汇总和过滤处理
+3. 将SparkStreaming的处理结果放入Redis
+4. 在SmartBI中建立Redis连接，制作实时报表显示流处理结果
+
+实现
+
+1. cn.sunline.jjpoc.GenFile生成测试数据
+2. kafka-writer.sh将测试数据逐条发送到Kafka的test主题
+3. cn.sunline.jjpoc.KafkaStreamingJedisPoc为SparkStreaming的驱动程序
+4. cn.sunline.jjpoc.TopM为SparkStreaming的累加程序
+
+演示
+
+1. 提交poc程序到Spark
+2. 启动数据发送脚本kafka-writer.sh
+3. 打开SmartBI实时报表
+4. 查看页面上的实时报表更新情况
+

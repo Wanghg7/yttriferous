@@ -1,0 +1,135 @@
+Spark Standalone Mode
+================================================================================
+
+spark-2.1.0-bin-hadoop2.7
+
+start master
+    sbin/start-master.sh
+
+view master webui
+    http://localhost:8080/
+
+start slaves
+    SPARK_WORKER_INSTANCES=3 SPARK_WORKER_CORES=1 sbin/start-slave.sh spark://Wangs-MacBook-Pro.local:7077
+
+connect to spark
+    bin/spark-shell spark://Wangs-MacBook-Pro.local:7077
+
+submit to spark in client mode
+    bin/spark-submit --master spark://Wangs-MacBook-Pro.local:7077 /Users/wanghg/IdeaProjects/sparktest/target/sparktest-1.0-SNAPSHOT.jar
+
+submit to spark in cluster mode
+    bin/spark-submit --master spark://Wangs-MacBook-Pro.local:7077 --deploy-mode cluster /Users/wanghg/IdeaProjects/sparktest/target/sparktest-1.0-SNAPSHOT.jar
+
+Redis
+================================================================================
+
+https://redis.io/
+
+redis-3.2.8.tar.gz
+
+九江POC
+
+开发环境确认
+================================================================================
+
+NetworkStreamingDemo
+--------------------------------------------------------------------------------
+spark web ui default: 4040
+-------------------------------------------------------------------------------- OKAY
+
+NetworkStreamingDemo [JAR]
+--------------------------------------------------------------------------------
+bin/spark-submit --master local[2] jjpoc-1.0-SNAPSHOT.jar
+-------------------------------------------------------------------------------- OKAY
+
+KafkaStreamingDemo
+--------------------------------------------------------------------------------
+zookeeper default: 2181
+    kafka default: 9092
+-------------------------------------------------------------------------------- OKAY
+
+KafkaStreamingDemo [JAR]
+--------------------------------------------------------------------------------
+bin/spark-submit --master local[2] --jars <dependency/*.jar>  jjpoc-1.0-kafka.jar
+-------------------------------------------------------------------------------- OKAY
+
+KafkaStreamingJedisDemo [JAR]
+--------------------------------------------------------------------------------
+redis default: 6379
+java -cp dependency/*:jjpoc-1.0-kafka-jedis.jar cn.sunline.jjpoc.KafkaStreamingJedisDemo
+-------------------------------------------------------------------------------- OKAY
+
+
+部署环境确认
+================================================================================
+服务器：10.15.12.232
+用户名：root
+密  码：1qaz2wsx
+
+连接SSH
+--------------------------------------------------------------------------------
+Xshell
+-------------------------------------------------------------------------------- OKAY
+
+连接SFTP
+--------------------------------------------------------------------------------
+Xftp
+-------------------------------------------------------------------------------- OKAY
+
+安装nc
+--------------------------------------------------------------------------------
+nc-1.84-22.el6.x86_64.rpm@CentOS-6.5-x86_64-bin
+-------------------------------------------------------------------------------- OKAY
+
+确认端口冲突情况
+--------------------------------------------------------------------------------
+spark web ui default: 4040
+   zookeeper default: 2181
+       kafka default: 9092
+       redis default: 6379
+无冲突
+-------------------------------------------------------------------------------- OKAY
+
+JDK
+--------------------------------------------------------------------------------
+1.7.0_65
+-------------------------------------------------------------------------------- OKAY
+
+安装Spark & 确认spark-shell
+--------------------------------------------------------------------------------
+spark-2.1.0-bin-hadoop2.7.tgz
+bin/spark-shell
+val lines = sc.textFile("README.md")
+lines.filter(_.contains("Spark")).collect().foreach(println)
+-------------------------------------------------------------------------------- OKAY
+
+NetworkStreamingDemo [JAR]
+--------------------------------------------------------------------------------
+bin/spark-submit --master local[2] apps/jjpoc-1.0-network.jar
+-------------------------------------------------------------------------------- OKAY
+
+安装Kafka & 确认kafka-topics/kafka-console-consumer/kafka-console/producer
+--------------------------------------------------------------------------------
+bin/zookeeper-server-start.sh config/zookeeper.properties
+2181
+bin/kafka-server-start.sh config/server.properties
+9092
+    kafka-topics --create ...
+    kafka-topics --list ...
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+bin/kafka-topics.sh --list --zookeeper localhost:2181
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+kafka-console-consumer
+-------------------------------------------------------------------------------- OKAY
+
+KafkaStreamingDemo [JAR]
+--------------------------------------------------------------------------------
+java -cp apps/dependency/*:apps/jjpoc-1.0-kafka.jar cn.sunline.jjpoc.KafkaStreamnigDemo
+-------------------------------------------------------------------------------- OKAY
+
+KafkaStreamingJedisDemo [JAR]
+--------------------------------------------------------------------------------
+java -cp apps/dependency/*:apps/jjpoc-1.0-kafka-jedis.jar cn.sunline.jjpoc.KafkaStreamnigJedisDemo
+-------------------------------------------------------------------------------- OKAY
+
